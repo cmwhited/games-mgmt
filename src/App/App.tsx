@@ -33,10 +33,10 @@ const useStyles = makeStyles((theme: Theme) =>
 
 const App: React.FC = React.memo(() => {
   const classes = useStyles();
-  const { loading, modalOpen } = useAuth();
+  const { loading } = useAuth();
 
-  if (loading || modalOpen) {
-    return <Loading title={loading ? 'Loading App..' : 'Authenticating...'} />;
+  if (loading) {
+    return <Loading title="Loading App.." />;
   }
 
   return (

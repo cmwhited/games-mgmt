@@ -10,7 +10,7 @@ const PrivateRoute: React.FC<{ Component: any } & RouteComponentProps> = React.m
   useEffect(() => {
     const unauthenticatedRouteAttempt = async () => {
       if (!authenticated) {
-        await signin({ appState: { targetUrl: path } });
+        await signin({ targetUrl: path });
       }
     };
     unauthenticatedRouteAttempt();

@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { navigate } from '@reach/router';
 
 import { ThemeProvider } from '@material-ui/styles';
 import { createMuiTheme, Theme, CssBaseline } from '@material-ui/core';
@@ -34,7 +35,7 @@ const opts: Auth0ClientOptions = config.opts;
  * this will return them to route they were trying to reach.
  */
 const onSuccessRedirect = (appState: any) => {
-  window.history.replaceState({}, document.title, appState && appState.targetUrl ? appState.targetUrl : window.location.pathname);
+  navigate(appState.targetUrl);
 };
 
 ReactDOM.render(

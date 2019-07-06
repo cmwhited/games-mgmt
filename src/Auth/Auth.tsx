@@ -6,7 +6,6 @@ type AuthState = {
   authenticated?: boolean;
   authUser?: any;
   loading?: boolean;
-  modalOpen?: boolean;
   signin(appState?: any): Promise<void>;
   signout(params: any): void;
 };
@@ -15,7 +14,6 @@ const initialState: AuthState = {
   authenticated: false,
   authUser: undefined,
   loading: false,
-  modalOpen: false,
   signin: async (): Promise<void> => {},
   signout: (): void => {}
 };
@@ -34,7 +32,6 @@ const AuthProvider: React.FC<{ onSuccessRedirect: Function; opts: Auth0ClientOpt
   const [authUser, setAuthUser] = useState<any>();
   const [auth0, setAuth0] = useState<Auth0Client>();
   const [loading, setLoading] = useState<boolean>(true);
-  const [modalOpen, setModalOpen] = useState<boolean>(false);
 
   /**
    * Create a react effect hook for handling authentication with the auth0 client
@@ -50,7 +47,8 @@ const AuthProvider: React.FC<{ onSuccessRedirect: Function; opts: Auth0ClientOpt
       if (window.location.search.includes('code=')) {
         const { appState } = await _auth0.handleRedirectCallback();
         // redirect user with appState
-        onSuccessRedirect(appState || { targetUrl: DEFAULT_URI });
+        const state = { ...appState, targetUrl: appState.targetUrl || DEFAULT_URI };
+        onSuccessRedirect(state);
       }
       // check if the user is currently authenticated and set in state
       const authenticated = await _auth0.isAuthenticated();
@@ -73,22 +71,11 @@ const AuthProvider: React.FC<{ onSuccessRedirect: Function; opts: Auth0ClientOpt
    * Call the `auth0.loginWithRedict` method to begin the authentication flow using auth0.
    * @param appState any app state to pass into the auth0 authentication redirect
    */
-  const handleAuthentication = async (appState?: any): Promise<void> => {
+  const handleAuthentication = async (appState: any = { targetUrl: DEFAULT_URI }): Promise<void> => {
     if (!auth0) {
       throw new Error(`Auth0 Client is null`);
     }
-    setModalOpen(true);
-    await auth0.loginWithPopup({});
-    // check if the user is currently authenticated and set in state
-    const authenticated = await auth0.isAuthenticated();
-    setAuthenticated(authenticated);
-    // if the user is authenticated, get the user profile and set in state
-    if (authenticated) {
-      const user = await auth0.getUser();
-      setAuthUser(user);
-    }
-    onSuccessRedirect(appState || { targetUrl: DEFAULT_URI });
-    setModalOpen(false);
+    await auth0.loginWithRedirect({ redirect_uri: opts.redirect_uri!, appState });
   };
 
   /**
@@ -110,7 +97,6 @@ const AuthProvider: React.FC<{ onSuccessRedirect: Function; opts: Auth0ClientOpt
         authenticated,
         authUser,
         loading,
-        modalOpen,
         signin: async (appState?: any) => await handleAuthentication(appState),
         signout: () => handleSignout()
       }}
